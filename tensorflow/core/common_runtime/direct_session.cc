@@ -1,4 +1,4 @@
-/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
+﻿/* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -362,6 +362,7 @@ Status DirectSession::Run(const NamedTensorList& inputs,
              &run_metadata);
 }
 
+//run是被谁在调用，target_nodes是怎么来的
 Status DirectSession::Run(const RunOptions& run_options,
                           const NamedTensorList& inputs,
                           const std::vector<string>& output_names,
@@ -911,6 +912,7 @@ Status DirectSession::GetOrCreateExecutors(
 
   std::unique_ptr<ExecutorsAndKeys> ek(new ExecutorsAndKeys);
 
+  // -------------------- 创建图，为什么这里的graphs是一个map？？？？？？？？？？？？？？
   // The executor_lock_ is intentionally released while executor is
   // being created.
   std::unordered_map<string, std::unique_ptr<Graph>> graphs;
@@ -937,6 +939,7 @@ Status DirectSession::GetOrCreateExecutors(
   ek->items.reserve(graphs.size());
   const auto& optimizer_opts =
       options_.config.graph_options().optimizer_options();
+  // ------------------- 优化图
   GraphOptimizer optimizer(optimizer_opts);
   for (auto iter = graphs.begin(); iter != graphs.end(); ++iter) {
     const string& partition_name = iter->first;
@@ -1019,6 +1022,7 @@ Status DirectSession::GetOrCreateExecutors(
 
   // Another thread may have created the entry before us, in which case we will
   // reuse the already created one.
+  // ---------------- 往executors_里写入
   auto insert_result = executors_.emplace(key, std::move(ek));
   *executors_and_keys = insert_result.first->second.get();
 
